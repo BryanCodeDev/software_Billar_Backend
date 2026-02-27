@@ -9,7 +9,16 @@ dotenv.config();
 // Configuración de CORS
 const corsOptions = {
   origin: function(origin, callback) {
-    // Permitir solicitudes sin origen (como Postman) o desde localhost y producción
+    // En producción, permitir cualquier origen de Netlify
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT_NAME;
+    
+    if (isProduction) {
+      // En producción permitir cualquier origen o el específico de Netlify
+      callback(null, true);
+      return;
+    }
+    
+    // En desarrollo local, permitir solo localhost
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:3000',
@@ -52,17 +61,17 @@ app.use(express.json());
 app.set('io', io);
 
 // Rutas API
-app.use('/api/mesas', mesasRoutes);
-app.use('/api/sesiones', sesionesRoutes);
-app.use('/api/jugadores', jugadoresRoutes);
-app.use('/api/productos', productosRoutes);
-app.use('/api/clientes', clientesRoutes);
-app.use('/api/consumos', consumosRoutes);
-app.use('/api/categorias', categoriasRoutes);
-app.use('/api/config', configRoutes);
+app.use('/mesas', mesasRoutes);
+app.use('/sesiones', sesionesRoutes);
+app.use('/jugadores', jugadoresRoutes);
+app.use('/productos', productosRoutes);
+app.use('/clientes', clientesRoutes);
+app.use('/consumos', consumosRoutes);
+app.use('/categorias', categoriasRoutes);
+app.use('/config', configRoutes);
 
 // Endpoint de salud
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
