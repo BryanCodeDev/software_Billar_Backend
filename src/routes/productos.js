@@ -129,8 +129,15 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { 
       id_categoria, nombre, codigo_barras, precio_venta, precio_compra,
-      stock_minimo, unidad_medida, estado, imagen_url
+      stock_minimo, unidad_medida, estado, imagen_url, stock_actual
     } = req.body;
+    
+    // Obtener producto actual para calcular diferencia de stock
+    const productoActual = await query('SELECT * FROM productos WHERE id_producto = ?', [id]);
+    
+    if (productoActual.length === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
     
     const sql = `
       UPDATE productos 
@@ -144,6 +151,22 @@ router.put('/:id', async (req, res) => {
       id_categoria, nombre, codigo_barras, precio_venta, precio_compra,
       stock_minimo, unidad_medida, estado, imagen_url, id
     ]);
+    
+    // Si se proporciona un nuevo stock_actual, actualizarlo y registrar movimiento
+    if (stock_actual !== undefined && stock_actual !== productoActual[0].stock_actual) {
+      const stock_anterior = productoActual[0].stock_actual;
+      const diferencia = stock_actual - stock_anterior;
+      
+      await query('UPDATE productos SET stock_actual = ? WHERE id_producto = ?', [stock_actual, id]);
+      
+      // Registrar movimiento de ajuste
+      const tipoMovimiento = diferencia > 0 ? 'ajuste_positivo' : 'ajuste_negativo';
+      await query(`
+        INSERT INTO movimientos_inventario 
+        (id_producto, tipo_movimiento, cantidad, stock_anterior, stock_nuevo, motivo)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `, [id, tipoMovimiento, Math.abs(diferencia), stock_anterior, stock_actual, 'Ajuste manual de inventario']);
+    }
     
     const productoActualizado = await query('SELECT * FROM productos WHERE id_producto = ?', [id]);
     
@@ -178,7 +201,7 @@ router.post('/inventario/entrada', async (req, res) => {
     const { id_producto, cantidad, motivo } = req.body;
     
     if (!id_producto || !cantidad || cantidad <= 0) {
-      return res.status(400).json({ error: 'Producto y cantidad son requeridos' });
+      return res.status(400).json({ error: 'Producto y cantidad positiva son requeridos' });
     }
     
     // Obtener stock actual
@@ -215,7 +238,7 @@ router.post('/inventario/salida', async (req, res) => {
     const { id_producto, cantidad, motivo } = req.body;
     
     if (!id_producto || !cantidad || cantidad <= 0) {
-      return res.status(400).json({ error: 'Producto y cantidad son requeridos' });
+      return res.status(400).json({ error: 'Producto y cantidad positiva son requeridos' });
     }
     
     // Obtener stock actual
