@@ -3,6 +3,7 @@ import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
+import { query } from './config/database.js';
 
 dotenv.config();
 
@@ -75,6 +76,41 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Función para emitir actualización de tiempo cada segundo
+function iniciarEmisorTiempoReal() {
+  setInterval(async () => {
+    try {
+      // Obtener todas las sesiones activas con información de la mesa
+      const sql = `
+        SELECT 
+          s.id_sesion,
+          s.id_mesa,
+          s.hora_inicio,
+          m.precio_hora,
+          TIMESTAMPDIFF(MINUTE, s.hora_inicio, NOW()) as minutos,
+          ROUND((TIMESTAMPDIFF(MINUTE, s.hora_inicio, NOW()) / 60) * m.precio_hora, 2) as costo
+        FROM sesiones s
+        JOIN mesas m ON s.id_mesa = m.id_mesa
+        WHERE s.estado = 'activa'
+      `;
+      
+      const sesionesActivas = await query(sql);
+      
+      // Emitir actualización de tiempo a todos en la sala de mesas
+      sesionesActivas.forEach(sesion => {
+        io.to('mesas').emit('sesion:tiempo', {
+          id_sesion: sesion.id_sesion,
+          id_mesa: sesion.id_mesa,
+          minutos: sesion.minutos,
+          costo: sesion.costo
+        });
+      });
+    } catch (error) {
+      console.error('Error en emisor de tiempo real:', error);
+    }
+  }, 10000); // Actualizar cada 10 segundos para mayor fluidez
+}
+
 // Manejo de WebSocket
 io.on('connection', (socket) => {
   console.log('Cliente conectado:', socket.id);
@@ -103,6 +139,9 @@ io.on('connection', (socket) => {
     console.log('Cliente desconectado:', socket.id);
   });
 });
+
+// Iniciar emisor de tiempo real
+iniciarEmisorTiempoReal();
 
 // Exportar io para usar en rutas
 export { io };

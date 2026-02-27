@@ -217,15 +217,20 @@ router.post('/partidas', async (req, res) => {
       return res.status(400).json({ error: 'Jugadores y mesa son requeridos' });
     }
     
-    // Determinar ganador según la modalidad
-    let ganador = null;
+    // Validar que los jugadores sean diferentes
+    if (id_jugador1 === id_jugador2) {
+      return res.status(400).json({ error: 'Los jugadores deben ser diferentes' });
+    }
+    
+    // Determinar winner según la modalidad
+    let winner = 'empate';
     let puntosGanadosJ1 = 0;
     let puntosGanadosJ2 = 0;
     
     // Modalidad pool
     if (modalidad === 'pool') {
-      const b1 = bolas_jugador1 || 0;
-      const b2 = bolas_jugador2 || 0;
+      const b1 = parseInt(bolas_jugador1) || 0;
+      const b2 = parseInt(bolas_jugador2) || 0;
       
       // En pool clasificado: penalización por perder antes de tiempo
       if (tipo_partida === 'clasificado') {
@@ -259,14 +264,15 @@ router.post('/partidas', async (req, res) => {
     } 
     // Modalidad 3 bandas o carambola
     else if (modalidad === '3_bandas' || modalidad === 'carambola') {
-      const p1 = puntos_jugador1 || 0;
-      const p2 = puntos_jugador2 || 0;
+      const p1 = parseInt(puntos_jugador1) || 0;
+      const p2 = parseInt(puntos_jugador2) || 0;
+      const ptsJuego = parseInt(puntos_juego) || 0;
       
       // Gana quien llegue primero a los puntos del juego
-      if (puntos_juego && puntos_juego > 0) {
-        if (p1 >= puntos_juego && p1 > p2) winner = 'jugador1';
-        else if (p2 >= puntos_juego && p2 > p1) winner = 'jugador2';
-        else if (p1 === p2 && p1 >= puntos_juego) winner = 'empate';
+      if (ptsJuego > 0) {
+        if (p1 >= ptsJuego && p1 > p2) winner = 'jugador1';
+        else if (p2 >= ptsJuego && p2 > p1) winner = 'jugador2';
+        else if (p1 === p2 && p1 >= ptsJuego) winner = 'empate';
         else {
           // Todavía no llega nadie, gana quien tenga más
           if (p1 > p2) winner = 'jugador1';
@@ -289,8 +295,8 @@ router.post('/partidas', async (req, res) => {
     }
     // Modalidad por defecto
     else {
-      const p1 = puntos_jugador1 || 0;
-      const p2 = puntos_jugador2 || 0;
+      const p1 = parseInt(puntos_jugador1) || 0;
+      const p2 = parseInt(puntos_jugador2) || 0;
       
       if (p1 > p2) winner = 'jugador1';
       else if (p2 > p1) winner = 'jugador2';
@@ -301,15 +307,13 @@ router.post('/partidas', async (req, res) => {
       puntosGanadosJ2 = p2 + (winner === 'jugador2' ? ptsGanador : 0);
     }
     
-    const winner = winner || 'empate';
-    
     // Insertar partida
     const sqlPartida = `
       INSERT INTO partidas 
       (id_jugador1, id_jugador2, id_mesa, modalidad, tipo_partida,
        puntos_jugador1, puntos_jugador2, bolas_jugador1, bolas_jugador2,
        bola8_perdida1, bola8_perdida2, puntos_juego, 
-       ganador, fecha_inicio, estado)
+       winner, fecha_inicio, estado)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'finalizada')
     `;
     

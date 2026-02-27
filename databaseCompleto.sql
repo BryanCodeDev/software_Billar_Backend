@@ -1,7 +1,5 @@
 -- ============================================================
--- SCRIPT DE MIGRACIÓN - BASE DE DATOS BILLAR SYSTEM
--- Este script crea todas las tablas y datos de ejemplo
--- Uso: mysql -u usuario -p < migrations.sql
+-- SISTEMA COMPLETO DE BILLAR - BASE DE DATOS + DATOS
 -- ============================================================
 
 -- Crear la base de datos
@@ -38,7 +36,8 @@ CREATE TABLE IF NOT EXISTS sesiones (
     notas TEXT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_mesa) REFERENCES mesas(id_mesa) ON DELETE CASCADE
+    FOREIGN KEY (id_mesa) REFERENCES mesas(id_mesa) ON DELETE CASCADE,
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE SET NULL
 );
 
 -- ============================================================
@@ -62,7 +61,7 @@ CREATE TABLE IF NOT EXISTS jugadores (
 );
 
 -- ============================================================
--- TABLA: Partidas
+-- TABLA: Partidas (ACTUALIZADA CON NUEVAS COLUMNAS)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS partidas (
     id_partida INT AUTO_INCREMENT PRIMARY KEY,
@@ -78,6 +77,7 @@ CREATE TABLE IF NOT EXISTS partidas (
     bola8_perdida1 BOOLEAN DEFAULT FALSE,
     bola8_perdida2 BOOLEAN DEFAULT FALSE,
     puntos_juego INT DEFAULT NULL,
+    winner VARCHAR(20) DEFAULT 'empate',
     duracion_minutos INT DEFAULT 0,
     fecha_inicio DATETIME NOT NULL,
     fecha_fin DATETIME DEFAULT NULL,
@@ -264,12 +264,14 @@ INSERT INTO partidas (id_jugador1, id_jugador2, id_mesa, modalidad, tipo_partida
 (3, 4, 2, 'pool', 'clasificado', 0, 0, 7, 2, FALSE, FALSE, NULL, 60, NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 2 DAY + INTERVAL 60 MINUTE, 'finalizada'),
 (5, 6, 1, '3_bandas', 'clasificado', 45, 38, 0, 0, FALSE, FALSE, 50, 30, NOW() - INTERVAL 3 DAY, NOW() - INTERVAL 3 DAY + INTERVAL 30 MINUTE, 'finalizada'),
 (2, 3, 3, 'pool', 'libre', 0, 0, 4, 4, FALSE, FALSE, NULL, 35, NOW() - INTERVAL 4 DAY, NOW() - INTERVAL 4 DAY + INTERVAL 35 MINUTE, 'finalizada'),
-(7, 8, 2, '3_bandas', 'clasificado', 50, 47, 0, 0, FALSE, FALSE, 50, 40, NOW() - INTERVAL 5 DAY, NOW() - INTERVAL 5 DAY + INTERVAL 40 MINUTE, 'finalizada');
+(7, 8, 2, '3_bandas', 'clasificado', 50, 47, 0, 0, FALSE, FALSE, 50, 40, NOW() - INTERVAL 5 DAY, NOW() - INTERVAL 5 DAY + INTERVAL 40 MINUTE, 'finalizada'),
+(1, 3, 1, 'pool', 'clasificado', 0, 0, 3, 7, FALSE, TRUE, NULL, 50, NOW() - INTERVAL 6 DAY, NOW() - INTERVAL 6 DAY + INTERVAL 50 MINUTE, 'finalizada'),
+(4, 5, 3, 'carambola', 'clasificado', 35, 40, 0, 0, FALSE, FALSE, NULL, 25, NOW() - INTERVAL 7 DAY, NOW() - INTERVAL 7 DAY + INTERVAL 25 MINUTE, 'finalizada');
 
 -- ============================================================
--- MENSAJE DE ÉXITO
+-- VERIFICACIÓN
 -- ============================================================
-SELECT '✅ Base de datos creada exitosamente!' AS mensaje;
+SELECT '✅ Sistema listo!' AS mensaje;
 SELECT COUNT(*) AS total_mesas FROM mesas;
 SELECT COUNT(*) AS total_jugadores FROM jugadores;
 SELECT COUNT(*) AS total_clientes FROM clientes;
