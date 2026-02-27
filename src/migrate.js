@@ -199,10 +199,46 @@ const seedData = [
   ('mesas_activas', '4', 'Número de mesas activas'),
   ('password_admin', 'admin123', 'Contraseña de acceso')`,
 
-  // Productos (sin datos para evitar errores de foreign key por ahora)
-  // Jugadores (sin datos para evitar errores)
-  // Clientes (sin datos)
-  // Partidas (sin datos)
+  // Productos
+  `INSERT IGNORE INTO productos (id_categoria, nombre, codigo_barras, precio_venta, precio_compra, stock_actual, stock_minimo, unidad_medida, estado) VALUES
+  (1, 'Cerveza Nacional', '789123456001', 3000, 1500, 24, 6, 'und', 'activo'),
+  (1, 'Cerveza Importada', '789123456002', 6000, 3500, 12, 3, 'und', 'activo'),
+  (1, 'Copa de Whisky', '789123456003', 12000, 5000, 10, 2, 'und', 'activo'),
+  (2, 'Gaseosa Pequeña', '789123456010', 2000, 1000, 30, 10, 'und', 'activo'),
+  (2, 'Gaseosa Grande', '789123456011', 3500, 1800, 20, 5, 'und', 'activo'),
+  (2, 'Agua Mineral', '789123456012', 2500, 1200, 15, 5, 'und', 'activo'),
+  (3, 'Papas Fritas', '789123456020', 5000, 2500, 20, 5, 'und', 'activo'),
+  (3, 'Maní', '789123456021', 3000, 1500, 15, 3, 'und', 'activo'),
+  (3, 'Nachos con queso', '789123456022', 8000, 4000, 10, 3, 'und', 'activo')`,
+
+  // Jugadores
+  `INSERT IGNORE INTO jugadores (nombre, apodo, telefono, email, nivel, puntos_totales, partidas_jugadas, partidas_ganadas) VALUES
+  ('Carlos Mendoza', 'El Torito', '3001234567', 'carlos@email.com', 'avanzado', 150, 25, 18),
+  ('Juan Pérez', 'El Mono', '3002345678', 'juan@email.com', 'intermedio', 85, 20, 12),
+  ('Pedro Gómez', 'Petaco', '3003456789', 'pedro@email.com', 'experto', 220, 30, 25),
+  ('María López', 'La China', '3004567890', 'maria@email.com', 'principiante', 30, 10, 5),
+  ('Roberto Díaz', 'El Gato', '3005678901', 'roberto@email.com', 'intermedio', 95, 22, 14),
+  ('Luis Fernández', 'Lucho', '3006789012', 'luis@email.com', 'avanzado', 175, 28, 20),
+  ('Ana Martínez', 'Anita', '3007890123', 'ana@email.com', 'principiante', 45, 12, 7),
+  ('José Rodríguez', 'Checho', '3008901234', 'jose@email.com', 'experto', 250, 35, 28)`,
+
+  // Clientes
+  `INSERT IGNORE INTO clientes (nombre, telefono, email, saldo_actual, total_consumido, visitas) VALUES
+  ('Cliente Frecuente 1', '3101111111', 'cliente1@email.com', 25000, 150000, 15),
+  ('Cliente Frecuente 2', '3102222222', 'cliente2@email.com', 0, 85000, 8),
+  ('Cliente Ocasional', '3103333333', 'cliente3@email.com', 15000, 45000, 3),
+  ('Cliente Nuevo', '3104444444', 'cliente4@email.com', 0, 12000, 1),
+  ('Cliente VIP', '3105555555', 'cliente5@email.com', 50000, 350000, 30)`,
+
+  // Partidas
+  `INSERT IGNORE INTO partidas (id_jugador1, id_jugador2, id_mesa, modalidad, tipo_partida, puntos_jugador1, puntos_jugador2, bolas_jugador1, bolas_jugador2, bola8_perdida1, bola8_perdida2, puntos_juego, duracion_minutos, fecha_inicio, fecha_fin, estado) VALUES
+  (1, 2, 1, 'pool', 'clasificado', 0, 0, 5, 3, FALSE, FALSE, NULL, 45, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY) + INTERVAL 45 MINUTE, 'finalizada'),
+  (3, 4, 2, 'pool', 'clasificado', 0, 0, 7, 2, FALSE, FALSE, NULL, 60, DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY) + INTERVAL 60 MINUTE, 'finalizada'),
+  (5, 6, 1, '3_bandas', 'clasificado', 45, 38, 0, 0, FALSE, FALSE, 50, 30, DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_SUB(NOW(), INTERVAL 3 DAY) + INTERVAL 30 MINUTE, 'finalizada'),
+  (2, 3, 3, 'pool', 'libre', 0, 0, 4, 4, FALSE, FALSE, NULL, 35, DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY) + INTERVAL 35 MINUTE, 'finalizada'),
+  (7, 8, 2, '3_bandas', 'clasificado', 50, 47, 0, 0, FALSE, FALSE, 50, 40, DATE_SUB(NOW(), INTERVAL 5 DAY), DATE_SUB(NOW(), INTERVAL 5 DAY) + INTERVAL 40 MINUTE, 'finalizada'),
+  (1, 3, 1, 'pool', 'clasificado', 0, 0, 3, 7, FALSE, TRUE, NULL, 50, DATE_SUB(NOW(), INTERVAL 6 DAY), DATE_SUB(NOW(), INTERVAL 6 DAY) + INTERVAL 50 MINUTE, 'finalizada'),
+  (4, 5, 3, 'carambola', 'clasificado', 35, 40, 0, 0, FALSE, FALSE, NULL, 25, DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_SUB(NOW(), INTERVAL 7 DAY) + INTERVAL 25 MINUTE, 'finalizada')`
 ];
 
 export async function runMigrations() {
