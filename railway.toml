@@ -1,0 +1,15 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm install"
+startCommand = "npm start"
+
+[deploy]
+numReplicas = 1
+sleepingTimeout = 60
+
+[build.env]
+NODE_VERSION = "20"
+
+[[variables]]
+name = "PORT"
+value = "3001"

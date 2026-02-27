@@ -27,9 +27,11 @@ async function startServer() {
     console.log('📝 Asegúrate de ejecutar el script database.sql en MySQL');
   }
 
-  httpServer.listen(PORT, () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-    console.log(`📡 WebSocket disponible en ws://localhost:${PORT}`);
+  httpServer.listen(PORT, '0.0.0.0', () => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const url = isProduction ? `https://tu-proyecto.up.railway.app` : `http://localhost:${PORT}`;
+    console.log(`🚀 Servidor corriendo en ${url}`);
+    console.log(`📡 WebSocket disponible en ${isProduction ? 'wss://' : 'ws://'}${isProduction ? 'tu-proyecto.up.railway.app' : 'localhost:' + PORT}`);
   });
 }
 
