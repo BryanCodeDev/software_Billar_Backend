@@ -147,6 +147,13 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { nombre, telefono, email, observaciones, activo } = req.body;
     
+    // Verificar si el cliente existe
+    const existing = await query('SELECT * FROM clientes WHERE id_cliente = ?', [id]);
+    
+    if (existing.length === 0) {
+      return res.status(404).json({ error: 'Cliente no encontrado' });
+    }
+    
     const sql = `
       UPDATE clientes 
       SET nombre = ?, telefono = ?, email = ?, observaciones = ?, activo = ?
@@ -168,6 +175,13 @@ router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
+    // Verificar si el cliente existe
+    const existing = await query('SELECT * FROM clientes WHERE id_cliente = ?', [id]);
+    
+    if (existing.length === 0) {
+      return res.status(404).json({ error: 'Cliente no encontrado' });
+    }
+    
     await query('UPDATE clientes SET activo = FALSE WHERE id_cliente = ?', [id]);
     
     res.json({ message: 'Cliente desactivado correctamente' });
@@ -184,6 +198,13 @@ router.post('/:id/pagar', async (req, res) => {
     
     if (!monto || monto <= 0) {
       return res.status(400).json({ error: 'Monto inválido' });
+    }
+    
+    // Verificar si el cliente existe
+    const existing = await query('SELECT * FROM clientes WHERE id_cliente = ?', [id]);
+    
+    if (existing.length === 0) {
+      return res.status(404).json({ error: 'Cliente no encontrado' });
     }
     
     // Insertar pago
